@@ -26,7 +26,7 @@ function Header() {
             </svg>
         </button>
       </div> 
-      <Link to={'/login'}>
+      <Link to={user?'/account':'/login'}>
         <div className='flex  border-gray-400 border rounded-full py-2 px-4  space-x-2 items-center'>
             <div>
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">

@@ -69,5 +69,8 @@ app.post('/login',async(req,res)=>{
         res.json(null)
     }
  })
+ app.get('/logout',(req,res)=>{
+    res.cookie('token','').json('logout true')
+ })
 app.listen(5000)
 
