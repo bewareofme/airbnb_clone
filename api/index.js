@@ -7,6 +7,10 @@ const bcrypt=require('bcryptjs')
 const bscryptSalt=bcrypt.genSaltSync(10)
 const cookieparser=require('cookie-parser')
 const jwt=require('jsonwebtoken')
+const download= require('image-downloader')
+const path = require('path')
+const multer=require('multer')
+const fs=require('fs')
 
 const jwtsecret='asdadasdafvasdfasdasdasdasd'
 
@@ -14,7 +18,7 @@ mongoose.connect('mongodb+srv://m001-student:m001-student-password@sandbox.zloao
 
 app.use(express.json())
 app.use(cookieparser())
-
+app.use('/uploads', express.static(path.join(__dirname,'uploads')))
 app.use(cors({
     credentials:true,
     origin:'http://localhost:5173'
@@ -71,6 +75,35 @@ app.post('/login',async(req,res)=>{
  })
  app.get('/logout',(req,res)=>{
     res.cookie('token','').json('logout true')
+ })
+
+ app.post('/uploadsbylink',async(req,res)=>{
+    const {photoLink}=req.body
+
+    const newName=Date.now()+'.jpg'
+    const options={
+        url:photoLink,
+        dest:__dirname+'\\uploads\\'+newName
+    }
+    try{
+        await download.image(options)
+        res.json(newName)
+    }
+    catch(e){
+        res.json(e)
+    }
+ })
+const photosMiddleware=multer({dest:'uploads/'})
+ app.post('/upload',photosMiddleware.array('photos',100),(req,res)=>{
+    const uploadedfiles=[]
+    for(let i=0;i<req.files.length;i++){
+        const {path,originalname}=req.files[i]
+        const part=originalname.split('.')
+        const newPath=path+'.'+part[part.length-1]
+        fs.renameSync(path,newPath)
+        uploadedfiles.push(newPath.split('\\')[1])
+    }
+    res.json(uploadedfiles)
  })
 app.listen(5000)
 
