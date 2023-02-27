@@ -3,6 +3,7 @@ import React, { useContext } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { UserContext } from '../UserContext'
 import PlacesPage from './PlacesPage'
+import BookingList from '../components/BookingsList'
 
 function AccountPage() {
     const {subpage,action}=useParams()
@@ -22,6 +23,8 @@ function AccountPage() {
 
   return (
     <div className='mt-5'>
+        {!(subpage==='bookings' && action) &&(
+
         <div className='flex space-x-10 max-w-lg mx-auto mt-5 mb-8'>
         <Link to={'/account'} className={linkclasses('profile')}>
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
@@ -40,6 +43,7 @@ function AccountPage() {
             </svg>
             My accomodations</Link>
         </div>
+        )}
         {subpage===undefined && (
             <div className='text-center mx-auto max-w-lg space-y-2'>
                 <div>
@@ -51,7 +55,10 @@ function AccountPage() {
         {subpage==='accomodations' &&(
             <PlacesPage/>
         )
-
+        }
+                {subpage==='bookings' &&(
+            <BookingList/>
+        )
         }
     </div>
   )

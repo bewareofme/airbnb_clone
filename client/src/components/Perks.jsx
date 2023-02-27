@@ -3,7 +3,6 @@ import React from 'react'
 function Perks({onChanged,selected}) {
 
     const cbHandler=(e)=>{
-        console.log(e.target.getAttribute('name'))
         if(e.target.checked){
            return onChanged([...selected,e.target.name])
         }
@@ -15,14 +14,13 @@ function Perks({onChanged,selected}) {
         return(
         <>
             <label htmlFor="" className='border flex rounded-full items-center p-4 gap-2 cursor-pointer'onClick={e=>{e.target.children[0]?.click()}}>
-                <input type="checkbox" name={named} onChange={cbHandler} />
+                <input type="checkbox" name={named} onChange={cbHandler} checked={selected.includes(named)} />
                 <span >{name}</span>
                 {icon}
             </label>
         </>
         )
     }
-
   return (
     <div>
             <h1 className='font-bold text-3xl'>Perks</h1>

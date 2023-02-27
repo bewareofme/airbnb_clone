@@ -3,6 +3,7 @@ const cors=require('cors')
 const app =express();
 const mongoose=require('mongoose')
 const User=require('./models/UserSchema.js')
+const Place=require('./models/PlaceSchema')
 const bcrypt=require('bcryptjs')
 const bscryptSalt=bcrypt.genSaltSync(10)
 const cookieparser=require('cookie-parser')
@@ -11,6 +12,7 @@ const download= require('image-downloader')
 const path = require('path')
 const multer=require('multer')
 const fs=require('fs')
+const Booking=require('./models/BookingSchema')
 
 const jwtsecret='asdadasdafvasdfasdasdasdasd'
 
@@ -45,7 +47,6 @@ catch(e){
 app.post('/login',async(req,res)=>{
     const {email,password}=req.body
     const  userInfo=await User.findOne({email})
-    console.log
     if(userInfo){
         const passOK=bcrypt.compareSync(password,userInfo.password)
         if(passOK){
@@ -105,5 +106,92 @@ const photosMiddleware=multer({dest:'uploads/'})
     }
     res.json(uploadedfiles)
  })
+ 
+ app.post('/places',(req,res)=>{
+    const {token}=req.cookies
+    const {titled,address,extra,photos,descriptiond,perks,checkin,checkout,maxGuests,price}=req.body
+    if(token){
+        jwt.verify(token,jwtsecret,{},async(err,user)=>{
+            if(err)throw err
+            await Place.create({
+                owner:user.id,title:titled,address,photos,description:descriptiond,perks,extraInf:extra,checkIn:checkin,checkOut:checkout,maxGuests,price
+            })
+            res.json('all good')    
+        })      
+    }else{
+        res.status(422).json(null)
+    }
+})
+
+app.get('/places',(req,res)=>{
+    const {token}=req.cookies
+    if(token){
+        jwt.verify(token,jwtsecret,{},async(err,user)=>{
+            if(err)throw err
+            const response=await Place.find({owner:user.id})
+            res.json(response)
+        })
+    }else{
+
+        res.json(null)
+    }
+})
+
+app.put('/places/:id',(req,res)=>{
+    const {id}=(req.params)
+    const {token}=req.cookies
+    const {titled,address,extra,photos,descriptiond,perks,checkin,checkout,maxGuests,price}=req.body
+    if(token){
+        jwt.verify(token,jwtsecret,{},async(err,user)=>{
+            if(err)throw err
+                await Place.updateOne(
+                    {_id:id}
+                    ,{$set:{title:titled,address,photos,description:descriptiond,perks,extraInf:extra,checkIn:checkin,checkOut:checkout,maxGuests,price}})
+
+                    res.json('updated '+titled)     
+                        }) 
+                    }else{
+                        res.status(422).json(null)
+                    }   
+        })
+app.get('/places-index',async(req,res)=>{
+    const response=await Place.find({})
+    res.json(response)
+})
+app.get('/places-single/:id',async(req,res)=>{
+    const {id}=req.params
+    const response=await Place.find({_id:id})
+    res.json(response)
+})
+app.post('/booking',async(req,res)=>{
+    const {currentPlace,checkIn,checkOut,numberOfGuests,name,phone,price}=req.body
+    const {token}=req.cookies
+    if(token){
+        jwt.verify(token,jwtsecret,{},async(err,user)=>{
+            if(err)throw err
+            const response=  await Booking.create({place:currentPlace,checkIn,checkOut,numberOfGuests,name,price,phone,user:user.id})
+             res.json('booking Created')
+                        }) 
+                    }else{
+                        res.status(422).json(null)
+                    }   
+})
+app.get('/booking',async(req,res)=>{
+    const {token}=req.cookies
+    if(token){
+        jwt.verify(token,jwtsecret,{},async(err,user)=>{
+            if(err)throw err
+            const response=  (await Booking.find({user:user.id}).populate('place'))
+             res.json(response)
+                        }) 
+                    }else{
+                        res.status(422).json(null)
+                    }   
+})
+app.get('/bookings-single/:id',async(req,res)=>{
+    const {id}=req.params
+    const response=await Booking.find({_id:id}).populate('place')
+    res.json(response)
+})
 app.listen(5000)
 
